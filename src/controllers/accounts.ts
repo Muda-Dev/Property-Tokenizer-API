@@ -6,7 +6,7 @@ const companyServices = new CompanyServices();
 
 // Middleware to apply JWT verification conditionally
 const applyJWTConditionally = (req: Request, res: Response, next: any) => {
-  const exemptedRoutes = ["login"]; // Add any exempted routes here
+  const exemptedRoutes = ["login", "signup", "verifyEmail", "verifyPhone", "marketplace"]; // Add any exempted routes here
   if (!exemptedRoutes.includes(req.path.split('/')[1])) {
     // Apply JWT verification
     // Assuming JWTMiddleware.verifyToken is a static method
@@ -18,146 +18,155 @@ const applyJWTConditionally = (req: Request, res: Response, next: any) => {
   }
 };
 
-router.post('/addAddress', applyJWTConditionally, addAddress);
-router.get('/getAddresses', applyJWTConditionally, getAddresses);
-router.delete('/deleteService', applyJWTConditionally, deleteService);
-router.get('/getCompanies', applyJWTConditionally, getCompanies);
-router.put('/updateService', applyJWTConditionally, updateService);
-router.get('/getAcceptedAssets', applyJWTConditionally, getAcceptedAssets);
-router.post('/addAcceptedAsset', applyJWTConditionally, addAcceptedAsset);
-router.get('/getServices', applyJWTConditionally, getServices);
-router.post('/addService', applyJWTConditionally, addService);
-router.post('/login', login);
-router.post('/register', applyJWTConditionally, addCompany);
+// New routes for the additional functionalities
+router.post('/signup', applyJWTConditionally, signup);
+router.post('/login', applyJWTConditionally, login);
+router.post('/verifyEmail', applyJWTConditionally, verifyEmail);
+router.post('/verifyPhone', applyJWTConditionally, verifyPhone);
+router.get('/marketplace', applyJWTConditionally, browseMarketplace);
+router.get('/property/:id', applyJWTConditionally, viewPropertyDetails);
+router.post('/purchaseShares', applyJWTConditionally, purchaseShares);
+router.get('/myProperties', applyJWTConditionally, viewMyProperties);
+router.get('/wallet', applyJWTConditionally, viewWallet);
+router.get('/transactionHistory', applyJWTConditionally, viewTransactionHistory);
+router.post('/admin/addProperty', applyJWTConditionally, addProperty);
+router.post('/admin/distributeRent', applyJWTConditionally, distributeRent);
+router.get('/admin/viewUsers', applyJWTConditionally, viewUsers);
+router.get('/admin/transactionHistory', applyJWTConditionally, viewTransactionHistory);
 
-// Route handler function for adding a company
+
+// Route handler function for logging in
 async function login(req: Request, res: Response) {
   try {
     const result = await companyServices.login(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error adding company', error });
+    res.status(500).json({ message: 'Error logging in', error });
   }
 }
 
-// Route handler function for adding a company
-async function addCompany(req: Request, res: Response) {
+// Route handler function for signing up
+async function signup(req: Request, res: Response) {
   try {
-    const result = await companyServices.addCompany(req.body);
+    const result = await companyServices.signup(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error adding company', error });
+    res.status(500).json({ message: 'Error signing up', error });
   }
 }
 
-// Route to add a company
-
-// Route handler function for getting all companies
-async function getCompanies(req: Request, res: Response) {
+// Route handler function for email verification
+async function verifyEmail(req: Request, res: Response) {
   try {
-    const result = await companyServices.getCompanies();
+    const result = await companyServices.verifyEmail(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching companies', error });
+    res.status(500).json({ message: 'Error verifying email', error });
   }
 }
 
-// Route to get companies
-
-// Route handler function for adding a service
-async function addService(req: Request, res: Response) {
+// Route handler function for phone verification
+async function verifyPhone(req: Request, res: Response) {
   try {
-    const result = await companyServices.addService(req.body);
+    const result = await companyServices.verifyPhone(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error adding service', error });
+    res.status(500).json({ message: 'Error verifying phone', error });
   }
 }
 
-// Route to add a service
-
-// Route handler function for getting services
-async function getServices(req: Request, res: Response) {
+// Route handler function for browsing the marketplace
+async function browseMarketplace(req: Request, res: Response) {
   try {
-    const result = await companyServices.getServices(req.body.company_id);
+    const result = await companyServices.browseMarketplace();
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching services', error });
+    res.status(500).json({ message: 'Error browsing marketplace', error });
   }
 }
 
-// Route to get services
-
-// Route handler function for adding an accepted asset
-async function addAcceptedAsset(req: Request, res: Response) {
+// Route handler function for viewing property details
+async function viewPropertyDetails(req: Request, res: Response) {
   try {
-    const result = await companyServices.addAcceptedAsset(req.body);
+    const propertyId = req.params.id;
+    const result = await companyServices.viewPropertyDetails(Number(propertyId));
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error adding accepted asset', error });
+    res.status(500).json({ message: 'Error viewing property details', error });
   }
 }
 
-// Route to add an accepted asset
-
-// Route handler function for getting accepted assets
-async function getAcceptedAssets(req: Request, res: Response) {
+// Route handler function for purchasing property shares
+async function purchaseShares(req: Request, res: Response) {
   try {
-    const result = await companyServices.getAcceptedAssets(req.body.service_id);
+    const result = await companyServices.purchaseShares(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching accepted assets', error });
+    res.status(500).json({ message: 'Error purchasing shares', error });
   }
 }
 
-// Route to get accepted assets
-
-// Route handler function for updating a service
-async function updateService(req: Request, res: Response) {
+// Route handler function for viewing owned properties
+async function viewMyProperties(req: Request, res: Response) {
   try {
-    const result = await companyServices.updateService(req.body.service_id, req.body.newData);
+    const userId = req.params.id; // Assuming user ID is available in the request object
+    const result = await companyServices.viewMyProperties(Number(userId));
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating service', error });
+    res.status(500).json({ message: 'Error viewing properties', error });
   }
 }
 
-// Route to update a service
-
-// Route handler function for deleting a service
-async function deleteService(req: Request, res: Response) {
+// Route handler function for viewing wallet
+async function viewWallet(req: Request, res: Response) {
   try {
-    const result = await companyServices.deleteService(req.body.service_id);
+    const userId = req.params.id; // Assuming user ID is available in the request object
+    const result = await companyServices.viewWallet(Number(userId));
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting service', error });
+    res.status(500).json({ message: 'Error viewing wallet', error });
   }
 }
 
-// Route to delete a service
-
-// Route handler function for adding an address
-async function addAddress(req: Request, res: Response) {
+// Route handler function for viewing transaction history
+async function viewTransactionHistory(req: Request, res: Response) {
   try {
-    const result = await companyServices.addAddress(req.body);
+    const userId = req.params.id; // Assuming user ID is available in the request object
+    const result = await companyServices.viewTransactionHistory(Number(userId));
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error adding address', error });
+    res.status(500).json({ message: 'Error viewing transaction history', error });
   }
 }
 
-// Route to add an address
-
-// Route handler function for getting addresses
-async function getAddresses(req: Request, res: Response) {
+// Route handler function for adding a property (Admin)
+async function addProperty(req: Request, res: Response) {
   try {
-    const result = await companyServices.getAddresses(req.body.company_id);
+    const result = await companyServices.addProperty(req.body);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching addresses', error });
+    res.status(500).json({ message: 'Error adding property', error });
   }
 }
 
-// Route to get addresses
+// Route handler function for distributing rent (Admin)
+async function distributeRent(req: Request, res: Response) {
+  try {
+    const result = await companyServices.distributeRent(req.body);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error distributing rent', error });
+  }
+}
+
+// Route handler function for viewing users (Admin)
+async function viewUsers(req: Request, res: Response) {
+  try {
+    const result = await companyServices.viewUsers();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error viewing users', error });
+  }
+}
 
 export default router;
