@@ -48,6 +48,33 @@ class Accounts extends Model {
     }
   }
 
+  async loginWithPhone(data: any) {
+    const { phone, password } = data;
+    const hashPassword = this.hashPassword(password);
+
+    try {
+      const users = await this.selectDataQuery(
+        "users",
+        `phone = '${phone}' and password='${hashPassword}'`
+      );
+      const user = users.length > 0 ? users[0] : null;
+
+      if (!user) {
+        return this.makeResponse(203, "User not found");
+      }
+      let user_id = user.user_id;
+      const jwts: any = process.env.JWT_SECRET;
+      const token = jwt.sign({ user_id }, jwts, {
+        expiresIn: 86400, // 24 hours
+      });
+      const response = { ...user, jwt: token };
+      return this.makeResponse(100, "Login successful", response);
+    } catch (error) {
+      console.error("Error in loginWithPhone:", error);
+      return this.makeResponse(203, "Error logging in with phone");
+    }
+  }
+
   async signup(data: any) {
     try {
       const { firstName, lastName, email, password, phone } = data;

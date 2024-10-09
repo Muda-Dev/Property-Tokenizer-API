@@ -6,7 +6,7 @@ const companyServices = new CompanyServices();
 
 // Middleware to apply JWT verification conditionally
 const applyJWTConditionally = (req: Request, res: Response, next: any) => {
-  const exemptedRoutes = ["login", "signup", "verifyEmail", "verifyPhone", "marketplace"]; // Add any exempted routes here
+  const exemptedRoutes = ["login", "loginWithPhone", "signup", "verifyEmail", "verifyPhone", "marketplace"]; // Add any exempted routes here
   if (!exemptedRoutes.includes(req.path.split('/')[1])) {
     // Apply JWT verification
     // Assuming JWTMiddleware.verifyToken is a static method
@@ -21,6 +21,7 @@ const applyJWTConditionally = (req: Request, res: Response, next: any) => {
 // New routes for the additional functionalities
 router.post('/signup', applyJWTConditionally, signup);
 router.post('/login', applyJWTConditionally, login);
+router.post('/loginWithPhone', applyJWTConditionally, loginWithPhone);
 router.post('/verifyEmail', applyJWTConditionally, verifyEmail);
 router.post('/verifyPhone', applyJWTConditionally, verifyPhone);
 router.get('/marketplace', applyJWTConditionally, browseMarketplace);
@@ -34,7 +35,6 @@ router.post('/admin/distributeRent', applyJWTConditionally, distributeRent);
 router.get('/admin/viewUsers', applyJWTConditionally, viewUsers);
 router.get('/admin/transactionHistory', applyJWTConditionally, viewTransactionHistory);
 
-
 // Route handler function for logging in
 async function login(req: Request, res: Response) {
   try {
@@ -42,6 +42,16 @@ async function login(req: Request, res: Response) {
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error });
+  }
+}
+
+// Route handler function for logging in with phone number
+async function loginWithPhone(req: Request, res: Response) {
+  try {
+    const result = await companyServices.loginWithPhone(req.body);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in with phone', error });
   }
 }
 
